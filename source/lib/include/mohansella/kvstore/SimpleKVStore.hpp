@@ -13,8 +13,7 @@ namespace mohansella::kvstore
     {
 
     public:
-        SimpleKVStore();
-        SimpleKVStore(const std::string & filePath);
+        SimpleKVStore(const std::string & filePath = {});
         virtual ~SimpleKVStore();
 
         std::string getFilePath() const;
@@ -23,11 +22,10 @@ namespace mohansella::kvstore
         ErrorCode read(const std::string & key, StoreValue & value);
         ErrorCode remove(const std::string & key);
 
-        std::int32_t getCount(); //total key value pairs
-        std::int64_t getSize();  //total size in bytes
+        void purge();
+        ErrorCode flush(); //call be called periodically to flush to disk
 
     private:
-
         struct Data;
         std::unique_ptr<Data> data;
 

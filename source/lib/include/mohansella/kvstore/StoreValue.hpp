@@ -32,6 +32,8 @@ namespace mohansella::kvstore
         const std::int64_t * asInteger() const;
         const std::string * asString() const;
 
+        void copyTo(StoreValue & other) const;
+
     private:
 
         union Pointer

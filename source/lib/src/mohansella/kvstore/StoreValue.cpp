@@ -70,10 +70,6 @@ namespace mohansella::kvstore
             default:
                 break;
         }
-
-        //typically below init not needed. but we are using destructor method as normal method in move.
-        this->valueType = StoreValue::Type::Unknown;
-        this->pointer = {0};
     }
 
     StoreValue::Type StoreValue::getType() const
@@ -104,6 +100,31 @@ namespace mohansella::kvstore
     const std::string * StoreValue::asString() const
     {
         return this->isString() ? this->pointer.string : nullptr;
+    }
+
+    void StoreValue::copyTo(StoreValue & other) const
+    {
+        other.~StoreValue();
+        other.valueType = this->valueType;
+        other.sizeVal = this->sizeVal;
+        other.pointer = {0};
+        switch (this->valueType)
+        {
+            case StoreValue::Type::Integer:
+                {
+                    other.pointer.integer = this->pointer.integer;
+                    break; //nop
+                }
+            case StoreValue::Type::String:
+                {
+                    auto ptr = std::unique_ptr<std::string>();
+                    *ptr = *this->pointer.string;
+                    other.pointer.string = ptr.release();
+                    break;
+                }
+            default:
+                break;
+        }
     }
 
 }
