@@ -1,2 +1,3 @@
 # simple-kvstore
-A simple KV store in c++
+
+This project is created mainly for an assignment. but it can be used for learning purpose.
