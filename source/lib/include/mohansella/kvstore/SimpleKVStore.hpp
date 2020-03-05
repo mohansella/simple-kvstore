@@ -14,6 +14,10 @@ namespace mohansella::kvstore
         SimpleKVStore(const std::string & filePath);
         virtual ~SimpleKVStore();
 
+        std::string getFilePath() const;
+        
+        
+
     private:
 
         struct Data;

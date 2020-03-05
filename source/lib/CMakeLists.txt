@@ -1,6 +1,7 @@
 #cpp files to be compiled (relative paths)
 list(APPEND _cpp_files
-    mohansella/kvstore/SimpleKVStore.cpp
+	mohansella/kvstore/SimpleKVStore.cpp
+	mohansella/kvstore/StoreValue.cpp
 )
 
 #convert paths to proper relative paths
