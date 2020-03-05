@@ -3,6 +3,9 @@
 #include <string>
 #include <memory>
 
+#include <mohansella/kvstore/StoreValue.hpp>
+#include <mohansella/kvstore/ErrorCode.hpp>
+
 namespace mohansella::kvstore 
 {
 
@@ -16,7 +19,12 @@ namespace mohansella::kvstore
 
         std::string getFilePath() const;
         
-        
+        ErrorCode create(const std::string & key, StoreValue & value, std::int32_t ttlInSecs = 0);
+        ErrorCode read(const std::string & key, StoreValue & value);
+        ErrorCode remove(const std::string & key);
+
+        std::int32_t getCount(); //total key value pairs
+        std::int64_t getSize();  //total size in bytes
 
     private:
 
