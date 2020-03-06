@@ -1,0 +1,24 @@
+#pragma once
+
+namespace mohansella::serial
+{
+
+	enum ByteSerialType
+	{
+		BSTYPE_NULL = 0,
+		BSTYPE_BYTE = 1,
+		BSTYPE_SHORT = 2,
+		BSTYPE_INTEGER = 3,
+		BSTYPE_FLOAT = 4,
+		BSTYPE_LONG = 5,
+		BSTYPE_DOUBLE = 6,
+		BSTYPE_STRING = 7,
+		BSTYPE_BLOB = 8,
+
+		BSTYPE_ARRAY_START = 101,
+		BSTYPE_ARRAY_END = 102,
+		BSTYPE_OBJECT_START = 103,
+		BSTYPE_OBJECT_END = 104,
+	};
+
+}

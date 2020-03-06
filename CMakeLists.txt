@@ -37,6 +37,17 @@ endif()
 #--------------- CMAKE install configuration end -------------------
 
 
+#--------------- BOOST configuration -----------------------
+if(MSVC)
+	#boost process is used for set/get environment variables which needs below def
+	add_definitions(-DBOOST_USE_WINDOWS_H)
+
+	#another environment audjustment
+	add_definitions(-DBOOST_NO_ANSI_APIS)
+endif()
+#-------------- BOOST configuration end --------------------
+
+
 add_subdirectory(source/lib)
 add_subdirectory(source/test)
 add_subdirectory(source/app)

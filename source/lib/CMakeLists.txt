@@ -1,7 +1,14 @@
 #cpp files to be compiled (relative paths)
 list(APPEND _cpp_files
+
+	mohansella/serial/Reader.cpp
+	mohansella/serial/Writer.cpp
+	mohansella/serial/FileReader.cpp
+	mohansella/serial/FileWriter.cpp
+
 	mohansella/kvstore/SimpleKVStore.cpp
 	mohansella/kvstore/StoreValue.cpp
+
 )
 
 #convert paths to proper relative paths
@@ -22,4 +29,11 @@ add_library(
 target_include_directories(
 	${This} 
 	PUBLIC include
+)
+
+#add dependencies
+target_link_libraries(
+	${This} PUBLIC 
+
+	CONAN_PKG::boost
 )
