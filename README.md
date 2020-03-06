@@ -2,8 +2,6 @@
 
 A file-based key-value data store written in C++
 
-### Build Steps:
-
 Note: This is a generic CMake project which should work on Windows, Linux or Mac. But it is recommended to use the below environment.
 
 #### Recomended Environment
