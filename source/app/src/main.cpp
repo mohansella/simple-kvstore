@@ -3,6 +3,7 @@
 #include <locale>
 #include <codecvt>
 #include <iostream>
+#include <thread>
 
 #include <boost/program_options.hpp>
 
@@ -67,7 +68,8 @@ std::int32_t SimpleKVStoreMain::main(std::vector<std::string> & args)
 			("operation,o", po::value<std::string>(), "operations can be show, create, read, delete, codes")
 			("key,k", po::value<std::string>(), "key is required from most of the CRD operations")
 			("value,v", po::value<std::string>(), "flow name to parse message")
-			("timetolive,t", po::value<std::int32_t>()->default_value(0), "optional time to live in seconds. required for create operation");
+			("timetolive,t", po::value<std::int32_t>()->default_value(0), "optional time to live in seconds. required for create operation")
+            ("sleep,s", po::value<std::int32_t>()->default_value(0), "sleep time in seconds to test file lock scenario");
 
     auto showHelp = false;
     auto entryHandled = false;
@@ -184,6 +186,12 @@ std::int32_t SimpleKVStoreMain::Data::unsafeMain(po::options_description & desc,
             entryHandled = false;
         }
 
+        if(entryHandled && vm.count("sleep"))
+        {
+            auto seconds = vm["sleep"].as<std::int32_t>();
+            std::this_thread::sleep_for(std::chrono::seconds(seconds));
+        }
+
         if(code < ErrorCode::CODE_ZERO)
         {
             std::cout << "[error] operation:" << operation << " failed with code:" << code << std::endl;
@@ -211,5 +219,6 @@ void SimpleKVStoreMain::Data::showCodes()
     std::cout << "-6 : FILE_NOT_FOUND" << std::endl;
     std::cout << "-7 : FILE_READ_FAILED" << std::endl;
     std::cout << "-8 : FILE_WRITE_FAILED" << std::endl;
+    std::cout << "-9 : FILE_LOCK_FAILED" << std::endl;
 }
  

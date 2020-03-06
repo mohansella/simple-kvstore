@@ -8,6 +8,8 @@
 #include <ctime>
 #include <chrono>
 
+#include <boost/interprocess/sync/file_lock.hpp>
+
 #include <mohansella/serial/FileWriter.hpp>
 #include <mohansella/serial/FileReader.hpp>
 
@@ -27,8 +29,11 @@ namespace mohansella::kvstore
         std::int64_t currSize = 0;
         std::int64_t limit;
         std::string filePath;
+        std::string lockFilePath;
         std::shared_mutex sharedMutex;
         std::unordered_map<std::string, StoreValueContainer> kvMap;
+
+        std::unique_ptr<boost::interprocess::file_lock> fileLock;
 
         void initFilePath(const std::string & filePath);
         std::int32_t getCurrEpochSeconds();
@@ -37,6 +42,7 @@ namespace mohansella::kvstore
     SimpleKVStore::SimpleKVStore(const std::string & filePath, std::int64_t limit)
     {
         this->data = std::make_unique<Data>();
+        this->data->limit = limit;
         this->data->initFilePath(filePath);
         auto code = this->load();
         if(code < 0 && code != ErrorCode::CODE_FAILURE_FILE_NOT_FOUND)
@@ -61,7 +67,6 @@ namespace mohansella::kvstore
     {
         std::scoped_lock lock(data->sharedMutex);
         auto pos = data->kvMap.find(key);
-        auto kvSize = key.size() + value.size();
         auto currEpochSeconds = data->getCurrEpochSeconds();
         if(pos == data->kvMap.end()) //new kv pair
         {
@@ -301,9 +306,27 @@ namespace mohansella::kvstore
 
     void SimpleKVStore::Data::initFilePath(const std::string & filePath)
     {
-        if(this->filePath.empty())
+        if(filePath.empty())
         {
-            this->filePath = "kvstore.data";
+            this->filePath = "kvstore.data"; //default file name
+        }
+        else
+        {
+            this->filePath = filePath;
+        }
+
+        //create lockfile if not exists
+        this->lockFilePath = this->filePath + ".lock";
+        if(!std::filesystem::exists(this->lockFilePath))
+        {
+            std::ofstream ofStream(this->lockFilePath);
+        }
+
+        this->fileLock = std::make_unique<boost::interprocess::file_lock>(this->lockFilePath.c_str());
+        if(!this->fileLock->try_lock())
+        {
+            std::cout << "unable to lock filePath:" << this->lockFilePath << std::endl;
+            throw std::exception("SimpleKVStore: unable to lock filepath");
         }
     }
 

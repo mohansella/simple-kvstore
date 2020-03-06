@@ -15,6 +15,7 @@ namespace mohansella::kvstore
         CODE_FAILURE_FILE_NOT_FOUND = -6,
         CODE_FAILURE_FILE_READ_FAILED = -7,
         CODE_FAILURE_FILE_WRITE_FAILED = -8,
+        CODE_FAILURE_FILE_LOCK_FAILED = -9,
 
         CODE_ZERO = 0,
         
