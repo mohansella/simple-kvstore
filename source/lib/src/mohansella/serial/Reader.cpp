@@ -85,7 +85,8 @@ namespace mohansella::serial
 		this->readSyntaxAndLen(ByteSerialType::BSTYPE_STRING, (std::uint8_t *) &stringLen, sizeof(stringLen));
 
 		auto bytes = this->peekRaw(stringLen);
-		//target.reset().append((const std::char8_t *) bytes, stringLen);
+		target = std::string(stringLen, '\0');
+		std::memcpy((char *) target.c_str(), bytes, stringLen); //unsafe operation
 		this->consumeRaw(stringLen);
 	}
 

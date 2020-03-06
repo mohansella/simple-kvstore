@@ -117,7 +117,7 @@ namespace mohansella::kvstore
                 }
             case StoreValue::Type::String:
                 {
-                    auto ptr = std::unique_ptr<std::string>();
+                    auto ptr = std::make_unique<std::string>();
                     *ptr = *this->pointer.string;
                     other.pointer.string = ptr.release();
                     break;

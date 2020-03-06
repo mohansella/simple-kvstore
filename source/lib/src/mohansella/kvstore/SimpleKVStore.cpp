@@ -39,11 +39,12 @@ namespace mohansella::kvstore
         this->data = std::make_unique<Data>();
         this->data->initFilePath(filePath);
         auto code = this->load();
-        if(code > 0 && code != ErrorCode::CODE_FAILURE_FILE_NOT_FOUND)
+        if(code < 0 && code != ErrorCode::CODE_FAILURE_FILE_NOT_FOUND)
         {
             std::cout << "unexpected error occured. code:" << code << ". throwing exception. check logs" << std::endl;
             throw std::exception("SimpleKVStore: unexpected error occured while deserializing"); 
         }
+        this->purge();
     }
 
     SimpleKVStore::~SimpleKVStore()
@@ -66,7 +67,7 @@ namespace mohansella::kvstore
         {
             StoreValueContainer container;
             container.value = std::move(value);
-            container.expiresOn = currEpochSeconds+ ttlInSecs;
+            container.expiresOn = ttlInSecs ? currEpochSeconds + ttlInSecs : 0;
             data->kvMap.insert({key, std::move(container)});
             return ErrorCode::CODE_ZERO;
         }
@@ -75,7 +76,7 @@ namespace mohansella::kvstore
             if(pos->second.expiresOn != 0 && pos->second.expiresOn < currEpochSeconds) //already expired
             {
                 pos->second.value = std::move(value);
-                pos->second.expiresOn = currEpochSeconds + ttlInSecs;
+                pos->second.expiresOn = ttlInSecs ? currEpochSeconds + ttlInSecs : 0;
                 return ErrorCode::CODE_ZERO;
             }
             else //return error
@@ -96,7 +97,8 @@ namespace mohansella::kvstore
         else
         {
             auto currEpochSeconds = data->getCurrEpochSeconds();
-            if(currEpochSeconds <= pos->second.expiresOn)
+            auto & expiresOn = pos->second.expiresOn;
+            if(expiresOn == 0 || currEpochSeconds <= pos->second.expiresOn)
             {
                 pos->second.value.copyTo(value);
                 return ErrorCode::CODE_ZERO;
@@ -115,7 +117,7 @@ namespace mohansella::kvstore
         if(pos != data->kvMap.end())
         {
             auto currEpochSeconds = data->getCurrEpochSeconds();
-            auto isExpired = pos->second.expiresOn < currEpochSeconds;
+            auto isExpired = pos->second.expiresOn ? pos->second.expiresOn < currEpochSeconds : false;
             data->kvMap.erase(pos);
             if(isExpired)
             {
@@ -139,7 +141,8 @@ namespace mohansella::kvstore
         auto currEpochSeconds = data->getCurrEpochSeconds();
         while(pos != data->kvMap.end())
         {
-            if(pos->second.expiresOn < currEpochSeconds)
+            auto & expiresOn = pos->second.expiresOn;
+            if(expiresOn && expiresOn < currEpochSeconds)
             {
                 pos = data->kvMap.erase(pos);
             }
@@ -178,7 +181,7 @@ namespace mohansella::kvstore
             if(expiresOn)
             {
                 auto delta = expiresOn - currEpochSeconds;
-                std::cout << " expiresIn:" << delta << "seconds";
+                std::cout << " expiresIn:" << delta << " seconds";
             }
             std::cout << std::endl;
         }
@@ -186,6 +189,7 @@ namespace mohansella::kvstore
 
     ErrorCode SimpleKVStore::store()
     {
+        std::scoped_lock lock(data->sharedMutex);
         try
         {
             FileWriter writer(data->filePath);
@@ -257,10 +261,12 @@ namespace mohansella::kvstore
                                 StoreValue value(strValue);
                                 container.value = std::move(value);
                                 data->kvMap.insert({key, std::move(container)});
+                                break;
                             }
                         default:
                             {
                                 reader.readNull();
+                                break;
                             }
                     }
                     syntax = reader.peekSyntax();

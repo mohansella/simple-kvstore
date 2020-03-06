@@ -63,8 +63,8 @@ std::int32_t SimpleKVStoreMain::main(std::vector<std::string> & args)
     desc.add_options()
 			("help,h", "show help")
 			("limit,l", po::value<std::int64_t>()->default_value(1024 * 1024 * 1024), "file max size. default is 1GB")
-			("filepath,p", po::value<std::string>(), "path to key-value store file")
-			("operation,o", po::value<std::string>()->default_value("show"), "operations can be show, create, read, delete, codes")
+			("filepath,p", po::value<std::string>()->default_value(""), "path to key-value store file")
+			("operation,o", po::value<std::string>(), "operations can be show, create, read, delete, codes")
 			("key,k", po::value<std::string>(), "key is required from most of the CRD operations")
 			("value,v", po::value<std::string>(), "flow name to parse message")
 			("timetolive,t", po::value<std::int32_t>()->default_value(0), "optional time to live in seconds. required for create operation");
@@ -115,7 +115,7 @@ std::int32_t SimpleKVStoreMain::Data::unsafeMain(po::options_description & desc,
         entryHandled = true;
     }
 
-    if(!entryHandled)
+    if(!entryHandled && vm.count("operation"))
     {
         auto filePath = vm["filepath"].as<std::string>();
         auto limit = vm["limit"].as<std::int64_t>();
@@ -132,6 +132,7 @@ std::int32_t SimpleKVStoreMain::Data::unsafeMain(po::options_description & desc,
         };
 
         ErrorCode code = ErrorCode::CODE_ZERO;
+        entryHandled = true;
         if(operation == "show")
         {
             auto kvStore = getKvStore();
@@ -177,6 +178,10 @@ std::int32_t SimpleKVStoreMain::Data::unsafeMain(po::options_description & desc,
             auto key = vm["key"].as<std::string>();
             auto kvStore = getKvStore();
             code = kvStore->remove(key);
+        }
+        else
+        {
+            entryHandled = false;
         }
 
         if(code < ErrorCode::CODE_ZERO)
