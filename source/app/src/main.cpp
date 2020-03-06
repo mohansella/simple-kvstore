@@ -67,8 +67,8 @@ std::int32_t SimpleKVStoreMain::main(std::vector<std::string> & args)
 			("filepath,p", po::value<std::string>()->default_value(""), "path to key-value store file")
 			("operation,o", po::value<std::string>(), "operations can be show, create, read, delete, codes")
 			("key,k", po::value<std::string>(), "key is required from most of the CRD operations")
-			("value,v", po::value<std::string>(), "flow name to parse message")
-			("timetolive,t", po::value<std::int32_t>()->default_value(0), "optional time to live in seconds. required for create operation")
+			("value,v", po::value<std::string>(), "value is required for create operation")
+			("timetolive,t", po::value<std::int32_t>()->default_value(0), "optional time-to-live in seconds. required for create operation")
             ("sleep,s", po::value<std::int32_t>()->default_value(0), "sleep time in seconds to test file lock scenario");
 
     auto showHelp = false;
