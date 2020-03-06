@@ -23,6 +23,7 @@ namespace mohansella::kvstore
         ErrorCode remove(const std::string & key);
 
         void purge();
+        void display();
 
         ErrorCode store();//stores the current state to its file
 

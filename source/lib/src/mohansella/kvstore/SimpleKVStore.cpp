@@ -5,6 +5,8 @@
 #include <fstream>
 #include <filesystem>
 #include <iostream>
+#include <ctime>
+#include <chrono>
 
 #include <mohansella/serial/FileWriter.hpp>
 #include <mohansella/serial/FileReader.hpp>
@@ -58,6 +60,7 @@ namespace mohansella::kvstore
     {
         std::scoped_lock lock(data->sharedMutex);
         auto pos = data->kvMap.find(key);
+        auto kvSize = key.size() + value.size();
         auto currEpochSeconds = data->getCurrEpochSeconds();
         if(pos == data->kvMap.end()) //new kv pair
         {
@@ -144,6 +147,40 @@ namespace mohansella::kvstore
             {
                 pos++;
             }
+        }
+    }
+
+    void SimpleKVStore::display()
+    {
+        std::scoped_lock lock(data->sharedMutex);
+        auto pos = data->kvMap.begin();
+        auto currEpochSeconds = data->getCurrEpochSeconds();
+        std::cout << "showing " << data->kvMap.size() << " entires" << std::endl;
+        for(auto & kvPair : data->kvMap)
+        {
+            std::cout << kvPair.first << ":";
+
+            auto & expiresOn = kvPair.second.expiresOn;
+            auto & storeValue = kvPair.second.value;
+            if(storeValue.isString())
+            {
+                std::cout << *storeValue.asString();
+            }
+            else if(storeValue.isInteger())
+            {
+                std::cout << *storeValue.asInteger();
+            }
+            else
+            {
+                std::cout << "UNKNOWN_TYPE["  << storeValue.getType() << "]";
+            }
+
+            if(expiresOn)
+            {
+                auto delta = expiresOn - currEpochSeconds;
+                std::cout << " expiresIn:" << delta << "seconds";
+            }
+            std::cout << std::endl;
         }
     }
 
@@ -249,6 +286,11 @@ namespace mohansella::kvstore
         {
             this->filePath = "kvstore.data";
         }
+    }
+
+    std::int32_t SimpleKVStore::Data::getCurrEpochSeconds()
+    {
+        return (std::int32_t) std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     }
 
 }
