@@ -13,7 +13,7 @@ namespace mohansella::kvstore
     {
 
     public:
-        SimpleKVStore(const std::string & filePath = {});
+        SimpleKVStore(const std::string & filePath = {}, std::int64_t limit = 1024 * 1024 * 1024); //1GB
         virtual ~SimpleKVStore();
 
         std::string getFilePath() const;
@@ -23,9 +23,12 @@ namespace mohansella::kvstore
         ErrorCode remove(const std::string & key);
 
         void purge();
-        ErrorCode flush(); //call be called periodically to flush to disk
+
+        ErrorCode store();//stores the current state to its file
 
     private:
+        ErrorCode load();
+
         struct Data;
         std::unique_ptr<Data> data;
 
