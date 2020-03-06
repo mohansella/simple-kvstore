@@ -2,8 +2,21 @@ cmake_minimum_required(VERSION 3.11)
 
 project(SimpleKVStore)
 
-#compiler adjustments (useful in linux environment when combining multiple libs to single so)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+#------------- compiler adjustments ---------------
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)  #useful in linux environment when combining multiple libs to single so
+
+if(MSVC)
+	set(CMAKE_C_FLAGS_DEBUG				"/D_DEBUG /MTd /Zi /Ob0 /Od /RTC1")
+	set(CMAKE_C_FLAGS_MINSIZEREL		"/MT /O1 /Ob1 /D NDEBUG")
+	set(CMAKE_C_FLAGS_RELEASE			"/MT /O2 /Ob2 /D NDEBUG")
+	set(CMAKE_C_FLAGS_RELWITHDEBINFO	"/MT /Zi /O2 /Ob1 /D NDEBUG")
+
+	set(CMAKE_CXX_FLAGS_DEBUG 			"/D_DEBUG /MTd /Zi /Ob0 /Od /RTC1")
+	set(CMAKE_CXX_FLAGS_MINSIZEREL 		"/MT /O1 /Ob1 /D NDEBUG")
+	set(CMAKE_CXX_FLAGS_RELEASE 		"/MT /O2 /Ob2 /D NDEBUG")
+	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO	"/MT /Zi /O2 /Ob1 /D NDEBUG")
+endif()
+#------------- compiler adjustments end ---------------
 
 
 #--------- Package Manager Adjustment -------------
