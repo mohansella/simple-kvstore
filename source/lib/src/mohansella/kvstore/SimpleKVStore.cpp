@@ -68,6 +68,14 @@ namespace mohansella::kvstore
             StoreValueContainer container;
             container.value = std::move(value);
             container.expiresOn = ttlInSecs ? currEpochSeconds + ttlInSecs : 0;
+            if(data->currSize > data->limit) //size_correction
+            {
+                return ErrorCode::CODE_FAILURE_SIZE_LIMIT_REACHED;
+            }
+            else
+            {
+                data->currSize += key.size() + value.size();
+            }
             data->kvMap.insert({key, std::move(container)});
             return ErrorCode::CODE_ZERO;
         }
@@ -75,6 +83,7 @@ namespace mohansella::kvstore
         {
             if(pos->second.expiresOn != 0 && pos->second.expiresOn < currEpochSeconds) //already expired
             {
+                data->currSize += value.size() - pos->second.value.size(); //size_correction
                 pos->second.value = std::move(value);
                 pos->second.expiresOn = ttlInSecs ? currEpochSeconds + ttlInSecs : 0;
                 return ErrorCode::CODE_ZERO;
@@ -118,6 +127,7 @@ namespace mohansella::kvstore
         {
             auto currEpochSeconds = data->getCurrEpochSeconds();
             auto isExpired = pos->second.expiresOn ? pos->second.expiresOn < currEpochSeconds : false;
+            data->currSize -= key.size() + pos->second.value.size(); //size_correction
             data->kvMap.erase(pos);
             if(isExpired)
             {
@@ -144,6 +154,7 @@ namespace mohansella::kvstore
             auto & expiresOn = pos->second.expiresOn;
             if(expiresOn && expiresOn < currEpochSeconds)
             {
+                data->currSize -= (pos->first.length() + pos->second.value.size()); //size_correction
                 pos = data->kvMap.erase(pos);
             }
             else
@@ -251,6 +262,7 @@ namespace mohansella::kvstore
                             {
                                 StoreValue value(reader.readLong());
                                 container.value = std::move(value);
+                                data->currSize += key.size() + container.value.size(); //size_correction
                                 data->kvMap.insert({key, std::move(container)});
                                 break;
                             }
@@ -260,6 +272,7 @@ namespace mohansella::kvstore
                                 reader.readString(strValue);
                                 StoreValue value(strValue);
                                 container.value = std::move(value);
+                                data->currSize += key.size() + container.value.size(); //size_correction
                                 data->kvMap.insert({key, std::move(container)});
                                 break;
                             }
